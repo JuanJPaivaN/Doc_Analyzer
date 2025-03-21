@@ -1,0 +1,34 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model DocumentAnalysis {
+  id              Int      @id @default(autoincrement())
+  documentContent String   @db.Text
+  analysisType    String
+  result          String   @db.Text
+  timestamp       DateTime @default(now())
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
+  
+  // Índices para mejorar el rendimiento de consultas comunes
+  @@index([timestamp])
+  @@index([analysisType])
+  @@index([userId, timestamp]) // Para búsquedas de análisis por usuario ordenados por fecha
+}
+
+model User {
+  id        Int               @id @default(autoincrement())
+  email     String            @unique
+  name      String?
+  analyses  DocumentAnalysis[]
+  createdAt DateTime          @default(now())
+  
+  // Índice para búsquedas por email (probablemente para login)
+  @@index([email])
+}
